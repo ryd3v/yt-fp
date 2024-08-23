@@ -1,0 +1,9 @@
+# Ignore node_modules
+node_modules/
+venv/
+# Other common files/folders to ignore
+dist/
+.env
+.DS_Store
+.vscode/
+build/
