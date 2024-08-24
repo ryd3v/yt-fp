@@ -47,6 +47,10 @@ class YTForensicsApp(QWidget):
             self.download_directory = dir_name
             self.status_display.append(f"Selected Directory: {dir_name}")
 
+    def is_valid_youtube_url(self, url):
+        """Basic validation for YouTube URLs."""
+        return url.startswith("https://www.youtube.com/watch?v=") or url.startswith("https://youtu.be/")
+
     def download_video(self, url, download_path):
         ydl_opts = {
             'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
@@ -57,12 +61,20 @@ class YTForensicsApp(QWidget):
             video_path = ydl.prepare_filename(info_dict)
         return video_path
 
-    def generate_hash(self, file_path):
-        sha256_hash = hashlib.sha256()
+    def generate_hash(self, file_path, algorithm='sha256'):
+        if algorithm == 'sha256':
+            hash_func = hashlib.sha256()
+        elif algorithm == 'md5':
+            hash_func = hashlib.md5()
+        elif algorithm == 'sha1':
+            hash_func = hashlib.sha1()
+        else:
+            raise ValueError("Unsupported hash algorithm")
+
         with open(file_path, "rb") as f:
             for byte_block in iter(lambda: f.read(4096), b""):
-                sha256_hash.update(byte_block)
-        return sha256_hash.hexdigest()
+                hash_func.update(byte_block)
+        return hash_func.hexdigest()
 
     def create_pdf_report(self, evidence_data, report_path):
         c = canvas.Canvas(report_path, pagesize=letter)
@@ -70,12 +82,17 @@ class YTForensicsApp(QWidget):
         c.drawString(100, 730, f"Video URL: {evidence_data['url']}")
         c.drawString(100, 710, f"Video Path: {evidence_data['video_path']}")
         c.drawString(100, 690, f"SHA-256 Hash: {evidence_data['hash']}")
+        c.drawString(100, 670, f"MD5 Hash: {evidence_data.get('md5_hash', 'N/A')}")
+        c.drawString(100, 650, f"SHA-1 Hash: {evidence_data.get('sha1_hash', 'N/A')}")
         c.save()
 
     def start_collection(self):
         url = self.url_input.text()
         if not url:
             QMessageBox.warning(self, "Input Error", "Please enter a YouTube URL.")
+            return
+        if not self.is_valid_youtube_url(url):
+            QMessageBox.warning(self, "Input Error", "Please enter a valid YouTube URL.")
             return
         if not hasattr(self, 'download_directory'):
             QMessageBox.warning(self, "Input Error", "Please select a download directory.")
@@ -91,13 +108,23 @@ class YTForensicsApp(QWidget):
             QMessageBox.critical(self, "Download Error", f"Failed to download video: {e}")
             return
 
-        self.status_display.append("Generating hash...")
-        video_hash = self.generate_hash(video_path)
-        self.status_display.append(f"SHA-256 Hash: {video_hash}")
+        self.status_display.append("Generating hashes...")
+        video_hash_sha256 = self.generate_hash(video_path, 'sha256')
+        video_hash_md5 = self.generate_hash(video_path, 'md5')
+        video_hash_sha1 = self.generate_hash(video_path, 'sha1')
+        self.status_display.append(f"SHA-256 Hash: {video_hash_sha256}")
+        self.status_display.append(f"MD5 Hash: {video_hash_md5}")
+        self.status_display.append(f"SHA-1 Hash: {video_hash_sha1}")
 
         self.status_display.append("Creating report...")
         report_path = os.path.join(self.download_directory, "evidence_report.pdf")
-        self.create_pdf_report({"url": url, "video_path": video_path, "hash": video_hash}, report_path)
+        self.create_pdf_report({
+            "url": url,
+            "video_path": video_path,
+            "hash": video_hash_sha256,
+            "md5_hash": video_hash_md5,
+            "sha1_hash": video_hash_sha1
+        }, report_path)
         self.status_display.append(f"Report created: {report_path}")
 
         self.status_display.append("Evidence collection completed successfully!")
