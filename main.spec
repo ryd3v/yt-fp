@@ -36,3 +36,8 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
+app = BUNDLE(exe,
+         name='Yt-Fp.app',
+         icon=None,
+         bundle_identifier=None,
+)
