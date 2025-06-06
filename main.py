@@ -5,7 +5,7 @@ import yt_dlp
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog, QTextEdit, QMessageBox
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-
+os.environ["PATH"] += os.pathsep + "/opt/homebrew/bin"
 class YTForensicsApp(QWidget):
     def __init__(self):
         super().__init__()
@@ -54,7 +54,9 @@ class YTForensicsApp(QWidget):
     def download_video(self, url, download_path):
         ydl_opts = {
             'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
-            'res': '2160',
+            'format': 'bestvideo+bestaudio/best',
+            'ffmpeg_location': '/opt/homebrew/bin/ffmpeg',
+            'ffprobe_location': '/opt/homebrew/bin/ffprobe',
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=True)
