@@ -37,7 +37,7 @@ exe = EXE(
     entitlements_file=None,
 )
 app = BUNDLE(exe,
-         name='Yt-Fp.app',
+         name='YTF.app',
          icon=None,
          bundle_identifier=None,
 )

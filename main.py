@@ -54,7 +54,7 @@ class YTForensicsApp(QWidget):
     def download_video(self, url, download_path):
         ydl_opts = {
             'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
-            'format': 'best',
+            'res': '2160',
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=True)
