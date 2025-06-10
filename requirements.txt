@@ -16,7 +16,7 @@ PyQt6-Qt6==6.7.2
 PyQt6_sip==13.8.0
 pywin32-ctypes==0.2.3
 reportlab==4.2.2
-requests==2.32.3
+requests==2.32.4
 setuptools==78.1.1
 urllib3==2.2.2
 websockets==13.0
